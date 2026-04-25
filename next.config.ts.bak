@@ -1,0 +1,11 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+  experimental: {
+    // 警告に出ている通り、配列の中にIPを文字列で入れます
+    allowedDevOrigins: ["18.178.204.116"]
+  }
+};
+
+export default nextConfig;

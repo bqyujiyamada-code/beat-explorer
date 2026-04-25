@@ -1,142 +1,246 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
+.container {
+  min-height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
+  padding: 2rem 1rem;
+}
 
-  --text-primary: #000;
-  --text-secondary: #666;
+.inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
 
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
+/* Auth Section */
+.authSection {
   display: flex;
-  flex: 1;
-  flex-direction: column;
+  justify-content: flex-end;
+  margin-bottom: 2rem;
+}
+
+.userProfile {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  gap: 12px;
+  background: #282828;
+  padding: 6px 16px;
+  border-radius: 30px;
 }
 
-.main {
-  display: flex;
-  flex: 1;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+.userName {
+  font-size: 0.85rem;
+  color: #fff;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
-}
-
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
-}
-
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
+.loginBtn, .logoutBtn {
+  background-color: #1db954;
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.8rem;
   cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+  transition: transform 0.2s, background-color 0.2s;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.logoutBtn {
+  background-color: transparent;
+  color: #b3b3b3;
+  border: 1px solid #555;
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+.loginBtn:hover, .logoutBtn:hover {
+  transform: scale(1.05);
+  background-color: #1ed760;
+  color: #000;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+/* Header & Search */
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #1db954, #19e68c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+.searchSection {
+  display: flex;
+  gap: 10px;
+  background: #282828;
+  padding: 8px;
+  border-radius: 50px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 20px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
+.button {
+  background: #1db954;
+  border: none;
+  color: black;
+  padding: 10px 25px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
+.button:disabled {
+  background: #555;
+}
+
+/* Grid & Cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: #181818;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s;
+  position: relative;
+  border: 1px solid #282828;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #333;
+}
+
+.category {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(29, 185, 84, 0.9);
+  color: black;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  z-index: 10;
+}
+
+.albumImage {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+.content {
+  padding: 1.5rem;
+}
+
+.trackName {
+  font-size: 1.2rem;
+  margin-bottom: 0.3rem;
+}
+
+.artistName {
+  color: #1db954;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.reason {
+  font-size: 0.9rem;
+  color: #b3b3b3;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* Preview Section */
+.previewSection {
+  margin-bottom: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #282828;
+}
+
+.previewLabel {
+  font-size: 0.7rem;
+  color: #555;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.audio {
+  width: 100%;
+  height: 30px;
+}
+
+.noPreview {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+/* Action Buttons */
+.actionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spotifyButton {
+  display: block;
+  text-align: center;
+  background: #1db954;
+  color: black;
+  text-decoration: none;
+  padding: 12px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.addToPlaylistBtn {
+  background: transparent;
+  border: 1px solid #1db954;
+  color: #1db954;
+  padding: 10px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addToPlaylistBtn:hover {
+  background: rgba(29, 185, 84, 0.1);
+}
+
+/* Loading */
+.loadingContainer {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #333;
+  border-top: 4px solid #1db954;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

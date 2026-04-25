@@ -1,0 +1,10 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    allowedDevOrigins: ["18.178.204.116"]
+  },
+  // 安全のため、テレメトリや警告を抑制
+  poweredByHeader: false,
+};
+
+export default nextConfig;
