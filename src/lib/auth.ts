@@ -8,7 +8,8 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "openid playlist-modify-public playlist-modify-private user-read-email",
+          // openid を削除し、基本的な権限だけに絞ります
+          scope: "user-read-email user-read-private playlist-modify-public playlist-modify-private",
         },
       },
     }),
@@ -16,7 +17,6 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, account }) {
       if (account) {
-        // 初回ログイン時に情報をトークンに保存
         return {
           ...token,
           accessToken: account.access_token,
@@ -24,18 +24,10 @@ export const authOptions: NextAuthOptions = {
           accessTokenExpires: account.expires_at ? account.expires_at * 1000 : 0,
         };
       }
-      
-      // 有効期限内ならそのまま返す
-      if (Date.now() < (token.accessTokenExpires as number)) {
-        return token;
-      }
-
-      // 期限切れなら自動更新を試みる（※今回は簡略化のため再ログイン推奨とします）
       return token;
     },
     async session({ session, token }: any) {
       session.accessToken = token.accessToken;
-      session.error = token.error;
       return session;
     },
   },
