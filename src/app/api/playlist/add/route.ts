@@ -1,12 +1,12 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { authOptions } from "../../auth/[...nextauth]/route"; // パスは環境に合わせて調整してください
 
 export async function POST(req: Request) {
-  // ログインセッション（アクセストークン）を取得
-  const session: any = await getServerSession();
+  const session: any = await getServerSession(authOptions);
   
   if (!session || !session.accessToken) {
-    return NextResponse.json({ error: "ログインが必要です" }, { status: 401 });
+    return NextResponse.json({ error: "Spotifyへのログインが必要です" }, { status: 401 });
   }
 
   try {
@@ -14,10 +14,10 @@ export async function POST(req: Request) {
     const playlistId = process.env.SPOTIFY_PLAYLIST_ID;
 
     if (!playlistId) {
-      return NextResponse.json({ error: "プレイリストIDが設定されていません" }, { status: 500 });
+      return NextResponse.json({ error: "環境変数 SPOTIFY_PLAYLIST_ID が未設定です" }, { status: 500 });
     }
 
-    // Spotify APIを叩いて曲を追加
+    // Spotify APIへリクエスト
     const response = await fetch(
       `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
       {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          uris: [trackUri], // trackUriは "spotify:track:xxxx" という形式である必要があります
+          uris: [trackUri],
         }),
       }
     );
@@ -35,11 +35,12 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
+      console.error("Spotify API Error:", data);
+      return NextResponse.json({ error: data.error?.message || "追加に失敗しました" }, { status: response.status });
     }
 
-    return NextResponse.json({ success: true, data });
-  } catch (error) {
-    return NextResponse.json({ error: "サーバーエラーが発生しました" }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

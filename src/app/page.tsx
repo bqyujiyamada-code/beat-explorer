@@ -1,131 +1,102 @@
 "use client";
 
 import { useState } from "react";
-import { useSession, signIn, signOut } from "next-auth/react";
-import styles from "./page.module.css";
 
-export default function MusicApp() {
-  const { data: session } = useSession();
+export default function MusicExplorer() {
   const [prompt, setPrompt] = useState("");
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
+  // AIに推薦を依頼する関数
   const handleSearch = async () => {
-    if (!prompt) return;
     setIsLoading(true);
-    setRecommendations([]);
+    setError("");
     try {
       const res = await fetch("/api/recommend", {
         method: "POST",
         body: JSON.stringify({ prompt }),
       });
-      if (!res.ok) throw new Error("Search failed");
       const data = await res.json();
-      setRecommendations(data.recommendations || []);
-    } catch (error) {
-      console.error(error);
+      
+      if (!res.ok) {
+        // 503エラー（混雑）などのメッセージを親切に変換
+        if (res.status === 503) throw new Error("AIが混み合っています。数秒後にもう一度お試しください。");
+        throw new Error(data.error || "検索に失敗しました");
+      }
+      
+      setRecommendations(data.recommendations);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // プレイリストに追加する関数
+  const handleAddToPlaylist = async (trackUri: string) => {
+    if (!trackUri) return;
+    
+    try {
+      const res = await fetch("/api/playlist/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackUri }),
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        alert("プレイリストに追加しました！");
+      } else {
+        alert("追加失敗: " + (data.error || "不明なエラー"));
+      }
+    } catch (err) {
+      alert("通信エラーが発生しました");
+    }
+  };
+
   return (
-    <div className={styles.container}>
-      <div className={styles.inner}>
-        {/* ログイン・認証セクション */}
-        <div className={styles.authSection}>
-          {session ? (
-            <div className={styles.userProfile}>
-              <span className={styles.userName}>👤 {session.user?.name}</span>
-              <button onClick={() => signOut()} className={styles.logoutBtn}>
-                Logout
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">Beat Explorer</h1>
+      
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="今の気分は？ (例: 集中できるジャズ)"
+          className="border p-2 flex-1 text-black"
+        />
+        <button
+          onClick={handleSearch}
+          disabled={isLoading}
+          className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+        >
+          {isLoading ? "AIが考え中..." : "検索"}
+        </button>
+      </div>
+
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+
+      <div className="grid gap-4">
+        {recommendations.map((track: any, index: number) => (
+          <div key={index} className="border p-4 rounded flex items-center gap-4">
+            {track.album_image && (
+              <img src={track.album_image} alt={track.track} className="w-20 h-20" />
+            )}
+            <div className="flex-1">
+              <h2 className="font-bold">{track.track} / {track.artist}</h2>
+              <p className="text-sm text-gray-400">{track.reason}</p>
+              
+              <button
+                onClick={() => handleAddToPlaylist(track.track_uri)}
+                className="mt-2 bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+              >
+                + ADD TO PLAYLIST
               </button>
             </div>
-          ) : (
-            <button onClick={() => signIn("spotify")} className={styles.loginBtn}>
-              Spotifyでログイン
-            </button>
-          )}
-        </div>
-
-        <header className={styles.header}>
-          <h1 className={styles.title}>Music Explorer</h1>
-          <div className={styles.searchSection}>
-            <input
-              className={styles.input}
-              type="text"
-              placeholder="今の気分や、好きなアーティストを入力..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-            <button 
-              className={styles.button} 
-              onClick={handleSearch} 
-              disabled={isLoading}
-            >
-              {isLoading ? "..." : "SEARCH"}
-            </button>
           </div>
-        </header>
-
-        <main>
-          {isLoading && (
-            <div className={styles.loadingContainer}>
-              <div className={styles.spinner}></div>
-              <p>AIがあなたにぴったりの曲をセレクト中...</p>
-            </div>
-          )}
-
-          {!isLoading && (
-            <div className={styles.grid}>
-              {recommendations.map((rec: any, i: number) => (
-                <div key={i} className={styles.card}>
-                  <span className={styles.category}>{rec.category}</span>
-                  
-                  <img 
-                    className={styles.albumImage}
-                    src={rec.album_image || "/no-image.png"} 
-                    alt={rec.track} 
-                  />
-
-                  <div className={styles.content}>
-                    <h2 className={styles.trackName}>{rec.track}</h2>
-                    <p className={styles.artistName}>{rec.artist}</p>
-                    <p className={styles.reason}>{rec.reason}</p>
-
-                    <div className={styles.previewSection}>
-                      <p className={styles.previewLabel}>Preview Audio</p>
-                      {rec.preview_url ? (
-                        <audio controls src={rec.preview_url} className={styles.audio} />
-                      ) : (
-                        <p className={styles.noPreview}>※試聴音源がありません</p>
-                      )}
-                    </div>
-
-                    <div className={styles.actionSection}>
-                      <a 
-                        href={rec.external_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className={styles.spotifyButton}
-                      >
-                        LISTEN ON SPOTIFY
-                      </a>
-                      
-                      {/* ログイン中のみ表示される追加ボタン（ロジックは今後実装） */}
-                      {session && (
-                        <button className={styles.addToPlaylistBtn}>
-                          ＋ ADD TO PLAYLIST
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </main>
+        ))}
       </div>
     </div>
   );
