@@ -6,12 +6,8 @@ export const authOptions: NextAuthOptions = {
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          // openid を削除し、基本的な権限だけに絞ります
-          scope: "user-read-email user-read-private playlist-modify-public playlist-modify-private",
-        },
-      },
+      // paramsなどのオブジェクトを使わず、一行のURL形式でスコープを渡すのが最も安定します
+      authorization: "https://accounts.spotify.com/authorize?scope=user-read-email,user-read-private,playlist-modify-public,playlist-modify-private",
     }),
   ],
   callbacks: {
