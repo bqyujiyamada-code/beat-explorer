@@ -5,7 +5,7 @@ import styles from "./page.module.css";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function MusicExplorer() {
-  const { data: session, status } = useSession(); // ログイン状態を取得
+  const { data: session, status } = useSession();
   const [prompt, setPrompt] = useState("");
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,12 +20,7 @@ export default function MusicExplorer() {
         body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
-      
-      if (!res.ok) {
-        if (res.status === 401) throw new Error("セッション切れです。再ログインしてください。");
-        if (res.status === 503) throw new Error("AI混雑中...数秒後にお試しください。");
-        throw new Error(data.error || "検索失敗");
-      }
+      if (!res.ok) throw new Error(data.error || "検索失敗");
       setRecommendations(data.recommendations);
     } catch (err: any) {
       setError(err.message);
@@ -41,30 +36,30 @@ export default function MusicExplorer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackUri }),
       });
+      const data = await res.json();
+      
       if (res.ok) {
         alert("プレイリストに追加しました！");
       } else {
-        const data = await res.json();
-        alert("失敗: " + (data.error || "エラー"));
+        // 403の場合のヒントを厚くする
+        const msg = res.status === 403 
+          ? `権限エラー(403): ${data.error}\n\n【対策】\n1. 一度ログアウトして再ログイン\n2. プレイリストIDが自分のものか確認` 
+          : data.error;
+        alert("追加失敗: " + msg);
       }
     } catch (err) {
-      alert("通信エラー");
+      alert("通信エラーが発生しました");
     }
   };
 
-  // 1. ログイン確認中の表示
-  if (status === "loading") {
-    return <div className={styles.container}><p style={{textAlign: 'center'}}>読み込み中...</p></div>;
-  }
+  if (status === "loading") return <div className={styles.container}>読み込み中...</div>;
 
-  // 2. 未ログイン時の表示
   if (!session) {
     return (
       <div className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>Beat Explorer</h1>
-          <p style={{ marginBottom: '2rem', color: '#888' }}>Spotifyでログインして、AIのおすすめをプレイリストに入れよう</p>
-          <button onClick={() => signIn("spotify")} className={styles.button} style={{ padding: '15px 40px' }}>
+          <button onClick={() => signIn("spotify")} className={styles.button}>
             Spotifyでログイン
           </button>
         </header>
@@ -72,16 +67,12 @@ export default function MusicExplorer() {
     );
   }
 
-  // 3. ログイン済みの表示（メイン機能）
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1 className={styles.title} style={{ margin: 0 }}>Beat Explorer</h1>
-          <button 
-            onClick={() => signOut()} 
-            style={{ background: 'none', border: '1px solid #333', color: '#888', padding: '5px 15px', borderRadius: '5px', cursor: 'pointer' }}
-          >
+          <h1 className={styles.title}>Beat Explorer</h1>
+          <button onClick={() => signOut()} className={styles.button} style={{ padding: '5px 15px', background: 'none', border: '1px solid #333' }}>
             ログアウト
           </button>
         </div>
@@ -96,26 +87,26 @@ export default function MusicExplorer() {
           className={styles.input}
         />
         <button onClick={handleSearch} disabled={isLoading} className={styles.button}>
-          {isLoading ? "AI解析中..." : "検索"}
+          {isLoading ? "解析中..." : "検索"}
         </button>
       </div>
 
-      {error && <p style={{ color: '#ff4d4d', textAlign: 'center', marginBottom: '2rem' }}>{error}</p>}
+      {error && <p style={{ color: '#ff4d4d', textAlign: 'center' }}>{error}</p>}
 
       <div className={styles.grid}>
         {recommendations.map((track: any, index: number) => (
           <div key={index} className={styles.card}>
-            {track.album_image && <img src={track.album_image} alt={track.track} style={{ width: '100%', borderRadius: '10px', marginBottom: '15px' }} />}
-            <div>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fff' }}>{track.track}</h2>
-              <p style={{ color: '#1db954', fontWeight: 'bold' }}>{track.artist}</p>
-              <p style={{ fontSize: '0.85rem', color: '#b3b3b3', margin: '15px 0' }}>{track.reason}</p>
+            {track.album_image && <img src={track.album_image} alt={track.track} style={{ width: '100%', borderRadius: '10px' }} />}
+            <div style={{ marginTop: '15px' }}>
+              <h2 style={{ fontSize: '1.1rem', color: '#fff' }}>{track.track}</h2>
+              <p style={{ color: '#1db954' }}>{track.artist}</p>
+              <p style={{ fontSize: '0.8rem', color: '#b3b3b3', margin: '10px 0' }}>{track.reason}</p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {track.preview_url ? (
-                  <audio controls src={track.preview_url} style={{ width: '100%', height: '32px' }} />
+                  <audio controls src={track.preview_url} style={{ width: '100%', height: '30px' }} />
                 ) : (
-                  <p style={{ fontSize: '0.75rem', color: '#666', textAlign: 'center' }}>※プレビュー制限あり</p>
+                  <p style={{ fontSize: '0.7rem', color: '#666', textAlign: 'center' }}>※プレビュー不可</p>
                 )}
                 <button onClick={() => handleAddToPlaylist(track.track_uri)} className={styles.button} style={{ width: '100%' }}>
                   + ADD TO PLAYLIST
