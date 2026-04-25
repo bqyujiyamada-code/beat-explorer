@@ -6,7 +6,8 @@ export const authOptions: NextAuthOptions = {
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-      authorization: "http://googleusercontent.com/spotify.com/9",
+      // scopeを追加：playlist-modify-public (公開) と playlist-modify-private (非公開) の両方を操作可能に
+      authorization: "https://accounts.spotify.com/authorize?scope=user-read-email,playlist-modify-public,playlist-modify-private",
     }),
   ],
   callbacks: {
