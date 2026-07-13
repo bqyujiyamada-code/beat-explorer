@@ -1,6 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
+interface GeminiRecommendation {
+  artist: string;
+  track: string;
+  reason: string;
+}
+
 // Spotifyのアクセストークンを取得（検索用）
 async function getSpotifyToken() {
   const response = await fetch("https://accounts.spotify.com/api/token", {
@@ -42,12 +48,12 @@ export async function POST(req: Request) {
     const responseText = geminiResult.response.text();
     
     // JSON部分を安全に抽出
-    let geminiData;
+    let geminiData: { recommendations: GeminiRecommendation[] };
     try {
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       const cleanJson = jsonMatch ? jsonMatch[0] : responseText;
       geminiData = JSON.parse(cleanJson);
-    } catch (parseError) {
+    } catch {
       console.error("Gemini JSON Parse Error. Raw Text:", responseText);
       throw new Error("Geminiの回答を解析できませんでした");
     }
@@ -56,7 +62,7 @@ export async function POST(req: Request) {
 
     // Spotifyの情報を付与
     const enriched = await Promise.all(
-      geminiData.recommendations.slice(0, 2).map(async (rec: any, i: number) => {
+      geminiData.recommendations.slice(0, 2).map(async (rec: GeminiRecommendation, i: number) => {
         try {
           const query = encodeURIComponent(`${rec.track} ${rec.artist}`);
           const searchRes = await fetch(
@@ -93,8 +99,9 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json({ recommendations: enriched });
-  } catch (error: any) {
-    console.error("DEBUG - Server Error Details:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("DEBUG - Server Error Details:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

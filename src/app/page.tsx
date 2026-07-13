@@ -4,10 +4,21 @@ import { useState } from "react";
 import styles from "./page.module.css";
 import { signIn, signOut, useSession } from "next-auth/react";
 
+interface Track {
+  artist: string;
+  track: string;
+  reason: string;
+  category: string;
+  album_image: string | null;
+  external_url: string | null;
+  preview_url: string | null;
+  track_uri: string | null;
+}
+
 export default function MusicExplorer() {
   const { data: session, status } = useSession();
   const [prompt, setPrompt] = useState("");
-  const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, setRecommendations] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,13 +28,14 @@ export default function MusicExplorer() {
     try {
       const res = await fetch("/api/recommend", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "検索失敗");
       setRecommendations(data.recommendations);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "検索失敗");
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +59,7 @@ export default function MusicExplorer() {
           : data.error;
         alert("追加失敗: " + msg);
       }
-    } catch (err) {
+    } catch {
       alert("通信エラーが発生しました");
     }
   };
@@ -94,7 +106,7 @@ export default function MusicExplorer() {
       {error && <p style={{ color: '#ff4d4d', textAlign: 'center' }}>{error}</p>}
 
       <div className={styles.grid}>
-        {recommendations.map((track: any, index: number) => (
+        {recommendations.map((track, index) => (
           <div key={index} className={styles.card}>
             {track.album_image && <img src={track.album_image} alt={track.track} style={{ width: '100%', borderRadius: '10px' }} />}
             <div style={{ marginTop: '15px' }}>
@@ -108,7 +120,13 @@ export default function MusicExplorer() {
                 ) : (
                   <p style={{ fontSize: '0.7rem', color: '#666', textAlign: 'center' }}>※プレビュー不可</p>
                 )}
-                <button onClick={() => handleAddToPlaylist(track.track_uri)} className={styles.button} style={{ width: '100%' }}>
+                <button
+                  onClick={() => track.track_uri && handleAddToPlaylist(track.track_uri)}
+                  disabled={!track.track_uri}
+                  className={styles.button}
+                  style={{ width: '100%' }}
+                  title={track.track_uri ? undefined : "この曲はSpotifyで見つからなかったため追加できません"}
+                >
                   + ADD TO PLAYLIST
                 </button>
               </div>
