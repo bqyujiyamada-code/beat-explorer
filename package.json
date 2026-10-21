@@ -11,8 +11,8 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "lucide-react": "^1.9.0",
-    "next": "16.2.4",
-    "next-auth": "^4.24.14",
+    "next": "16.4.2",
+    "next-auth": "^4.24.15",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "spotify-web-api-node": "^5.0.2"
@@ -23,7 +23,7 @@
     "@types/react-dom": "^19",
     "@types/spotify-web-api-node": "^5.0.11",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
+    "eslint-config-next": "16.4.2",
     "typescript": "^5"
   }
 }
